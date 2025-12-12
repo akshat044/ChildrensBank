@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<qualifiedTypeNameHistroy>
+    <fullyQualifiedTypeName name="org.springframework.web.bind.MethodArgumentNotValidException"/>
+    <fullyQualifiedTypeName name="org.springframework.http.HttpStatus"/>
+    <fullyQualifiedTypeName name="feign.FeignException"/>
+    <fullyQualifiedTypeName name="in.akshat.customer_service.enums.KycStatus"/>
+    <fullyQualifiedTypeName name="in.akshat.branch_service.mapper.BranchMapper"/>
+    <fullyQualifiedTypeName name="in.akshat.customer_service.validator.CustomerValidator"/>
+    <fullyQualifiedTypeName name="java.util.List"/>
+    <fullyQualifiedTypeName name="io.jsonwebtoken.Jwts"/>
+</qualifiedTypeNameHistroy>

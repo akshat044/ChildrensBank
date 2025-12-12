@@ -1,0 +1,70 @@
+spring.application.name=api-gateway
+server.port=9000
+
+#secretet key for token generation and token verfication 
+jwt.secret = scalive-secret-scalive-secret-sc
+
+#  Route 1 api gateway branchservice ->  admin service // bcz here url is different that's why two [0][1], if method is different for same then no need to change
+spring.cloud.gateway.server.webflux.routes[0].id=admin-branches-route
+spring.cloud.gateway.server.webflux.routes[0].uri=lb://admin-service
+spring.cloud.gateway.server.webflux.routes[0].predicates[0]=Path=/api/admin/branches/**
+
+#  Route 2 api gateway employeeservice -> admin service 
+spring.cloud.gateway.server.webflux.routes[1].id=admin-employees-route
+spring.cloud.gateway.server.webflux.routes[1].uri=lb://admin-service
+spring.cloud.gateway.server.webflux.routes[1].predicates[0]=Path=/api/admin/employees/**
+
+#  Route 3 api gateway branchservice -> branch service
+spring.cloud.gateway.server.webflux.routes[2].id=branch-service-route
+spring.cloud.gateway.server.webflux.routes[2].uri=lb://branch-service
+spring.cloud.gateway.server.webflux.routes[2].predicates[0]=Path=/api/branches/**
+
+#  Route 4 api gateway employeeservice -> employee service
+spring.cloud.gateway.server.webflux.routes[3].id=employee-service-route
+spring.cloud.gateway.server.webflux.routes[3].uri=lb://employee-service
+spring.cloud.gateway.server.webflux.routes[3].predicates[0]=Path=/api/employees/**
+
+#  Route 5 api gateway customer service -> customer service 
+spring.cloud.gateway.server.webflux.routes[4].id=customer-service-route
+spring.cloud.gateway.server.webflux.routes[4].uri=lb://customer-service
+spring.cloud.gateway.server.webflux.routes[4].predicates[0]=Path=/api/customers/**
+
+
+#  Route 6 for account service, getting same customer multiple account 
+spring.cloud.gateway.server.webflux.routes[5].id=account-service-route
+spring.cloud.gateway.server.webflux.routes[5].uri=lb://account-service
+spring.cloud.gateway.server.webflux.routes[5].predicates[0]=Path=/api/accounts/**
+
+
+#  Route 7 for payment service, api gateway - api gateway 
+spring.cloud.gateway.server.webflux.routes[6].id=payment-service-route
+spring.cloud.gateway.server.webflux.routes[6].uri=lb://payment-service
+spring.cloud.gateway.server.webflux.routes[6].predicates[0]=Path=/api/payments/**
+
+
+eureka.instance.prefer-ip-address=true
+eureka.instance.hostname=localhost
+
+# --- CORS at the Gateway (WebFlux namespace) ---
+spring.cloud.gateway.server.webflux.default-filters[0]=DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin
+spring.cloud.gateway.server.webflux.globalcors.add-to-simple-url-handler-mapping=true
+
+# Prefer patterns (future-proof). Use your frontend origin here.
+spring.cloud.gateway.server.webflux.globalcors.cors-configurations.[/**].allowed-origin-patterns[0]=http://localhost:5173
+
+# Allowed methods (include OPTIONS for preflight)
+spring.cloud.gateway.server.webflux.globalcors.cors-configurations.[/**].allowed-methods[0]=GET
+spring.cloud.gateway.server.webflux.globalcors.cors-configurations.[/**].allowed-methods[1]=POST
+spring.cloud.gateway.server.webflux.globalcors.cors-configurations.[/**].allowed-methods[2]=PUT
+spring.cloud.gateway.server.webflux.globalcors.cors-configurations.[/**].allowed-methods[3]=PATCH
+spring.cloud.gateway.server.webflux.globalcors.cors-configurations.[/**].allowed-methods[4]=DELETE
+spring.cloud.gateway.server.webflux.globalcors.cors-configurations.[/**].allowed-methods[5]=OPTIONS
+
+# Headers the browser may send
+spring.cloud.gateway.server.webflux.globalcors.cors-configurations.[/**].allowed-headers[0]=*
+
+# Only true if you send cookies/Authorization from the browser
+spring.cloud.gateway.server.webflux.globalcors.cors-configurations.[/**].allow-credentials=true
+
+# (Optional) cache preflight for 1h
+spring.cloud.gateway.server.webflux.globalcors.cors-configurations.[/**].max-age=3600

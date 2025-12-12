@@ -1,0 +1,93 @@
+package in.akshat.api_gateway.security;
+
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtParser;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.Ordered;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Component;
+import org.springframework.cloud.gateway.filter.GlobalFilter;
+import org.springframework.cloud.gateway.filter.GatewayFilterChain;
+import org.springframework.web.server.ServerWebExchange;
+import reactor.core.publisher.Mono;
+
+import java.nio.charset.StandardCharsets;
+import java.security.Key;
+import java.util.List;
+
+@Component
+public class JwtGateFilter implements GlobalFilter, Ordered {
+
+    @Value("${jwt.secret}")
+    private String jwtSecret;
+
+   
+
+    private Key signingKey() {
+        return Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
+    }
+
+ // replace excludedPaths + isExcluded() with:
+
+    private boolean isExcluded(String path) {
+        if (path == null) return false;
+        return path.equals("/auth/login")
+                || path.equals("/auth/register")
+                || path.startsWith("/actuator")
+                || path.equals("/")
+                || path.equals("/favicon.ico");
+    }
+
+    @Override
+    public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
+        String path = exchange.getRequest().getPath().value();
+
+        // 1) Allow excluded paths immediately
+        if (isExcluded(path)) {
+            return chain.filter(exchange);
+        }
+
+        // 2) Get Authorization header
+        List<String> authHeaders = exchange.getRequest().getHeaders().getOrEmpty(HttpHeaders.AUTHORIZATION);
+        if (authHeaders.isEmpty()) {
+            exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
+            return exchange.getResponse().setComplete();
+        }
+
+        String header = authHeaders.get(0);
+        if (!header.startsWith("Bearer ")) {
+            exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
+            return exchange.getResponse().setComplete();
+        }
+
+        String token = header.substring(7);
+
+        try {
+            JwtParser parser = Jwts.parserBuilder().setSigningKey(signingKey()).build();
+            Claims claims = parser.parseClaimsJws(token).getBody();
+
+            // Optional: check expiry explicitly
+            if (claims.getExpiration() != null && claims.getExpiration().before(new java.util.Date())) {
+                exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
+                return exchange.getResponse().setComplete();
+            }
+
+            // Token valid -> forward request unchanged (Authorization header remains)
+            return chain.filter(exchange);
+
+        } catch (Exception ex) {
+            // invalid signature, malformed token, etc.
+            exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
+            return exchange.getResponse().setComplete();
+        }
+    }
+
+    @Override
+    public int getOrder() {
+        // Run early
+        return -100;
+    }
+}

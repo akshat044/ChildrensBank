@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Copy element &apos;BranchResponse.java&apos; to &apos;customer-service/src/main/java/in.akshat.customer_service.dto&apos;&#x0D;&#x0A;- Original project: &apos;branch-service&apos;&#x0D;&#x0A;- Destination element: &apos;customer-service/src/main/java/in.akshat.customer_service.dto&apos;&#x0D;&#x0A;- Original element: &apos;in.akshat.branch_service.dto.BranchResponse.java&apos;" description="Copy compilation unit" destination="=customer-service/src\/main\/java=/optional=/true=/=/maven.pomderived=/true=/&lt;in.akshat.customer_service.dto" element1="/src\/main\/java=/optional=/true=/=/maven.pomderived=/true=/&lt;in.akshat.branch_service.dto{BranchResponse.java" files="0" flags="589830" folders="0" id="org.eclipse.jdt.ui.copy" policy="org.eclipse.jdt.ui.copyResources" stamp="1764141104415" units="1" version="1.0"/>
+</session>

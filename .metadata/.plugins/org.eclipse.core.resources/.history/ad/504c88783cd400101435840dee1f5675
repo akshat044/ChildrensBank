@@ -1,0 +1,22 @@
+package in.akshat.auth_service.util;
+
+ 
+import javax.crypto.SecretKey;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+ 
+@Component
+public class Util {
+	
+	@Value("${jwt.secret}")
+	private String secret;
+	
+	
+	private SecretKey getSigningKey() {
+		SecretKey sKey = Keys.hmacShaKeyFor(secret.getBytes());
+		return sKey;
+	}
+	
+
+}

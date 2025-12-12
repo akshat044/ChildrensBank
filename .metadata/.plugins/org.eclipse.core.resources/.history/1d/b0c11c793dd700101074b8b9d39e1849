@@ -1,0 +1,65 @@
+package in.akshat.api_gateway.security;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
+
+import org.springframework.security.authentication.ReactiveAuthenticationManager;
+import org.springframework.security.config.web.server.ServerHttpSecurity;
+
+import org.springframework.security.web.server.SecurityWebFilterChain;
+import org.springframework.security.web.server.authentication.AuthenticationWebFilter;
+import org.springframework.security.web.server.authentication.ServerAuthenticationConverter;
+
+import org.springframework.security.web.server.context.NoOpServerSecurityContextRepository;
+import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatchers;
+
+import org.springframework.security.web.server.SecurityWebFiltersOrder;
+
+@Configuration
+public class GatewaySecurityConfig {
+
+    private final ReactiveAuthenticationManager authManager;
+
+    public GatewaySecurityConfig(JwtReactiveAuthenticationManager authManager) {
+        this.authManager = authManager;
+    }
+
+    @Bean
+    public SecurityWebFilterChain springSecurityFilterChain(ServerHttpSecurity http) {
+
+        // AuthenticationWebFilter — uses our reactive auth manager + converter
+        AuthenticationWebFilter authWebFilter = new AuthenticationWebFilter(authManager);
+        ServerAuthenticationConverter converter = new BearerTokenServerAuthenticationConverter();
+        authWebFilter.setServerAuthenticationConverter(converter);
+
+        // don't send 302 to login pages etc; keep simple
+        authWebFilter.setRequiresAuthenticationMatcher(ServerWebExchangeMatchers.anyExchange());
+
+        // Build security chain
+        http
+            .csrf(csrf -> csrf.disable())
+            .httpBasic(httpBasic -> httpBasic.disable())
+            .formLogin(form -> form.disable())
+            .authorizeExchange(ex -> ex
+                // permit auth service endpoints and public
+                .pathMatchers("/auth/**").permitAll()
+                .pathMatchers("/actuator/**").permitAll()
+                // optionally allow preflight
+                .pathMatchers(HttpMethod.OPTIONS).permitAll()
+                // all other requests must be authenticated
+                .anyExchange().authenticated()
+            )
+            // Add custom authentication filter before any other security filters
+            .addFilterAt(authWebFilter, org.springframework.security.web.server.SecurityWebFiltersOrder.AUTHENTICATION)
+            .exceptionHandling(ex -> ex
+                .authenticationEntryPoint((exchange, ex2) -> {
+                    exchange.getResponse().setStatusCode(org.springframework.http.HttpStatus.UNAUTHORIZED);
+                    return exchange.getResponse().setComplete();
+                })
+            )
+            .securityContextRepository(org.springframework.security.web.server.context.NoOpServerSecurityContextRepository.getInstance());
+
+        return http.build();
+    }
+}
