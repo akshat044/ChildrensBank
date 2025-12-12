@@ -1,0 +1,194 @@
+Internal vs External Authentication Architecture in Microservices
+Problem Overview
+
+When using an API Gateway for authentication, the gateway validates the external user JWT.
+But once the request reaches internal microservices:
+
+Service-to-service calls should not require the user JWT again
+
+Services only need minimal user context (roles, userId) or pure service identity
+
+But if the same gateway route config applies to internal calls, the gateway forces JWT validation again, which is unnecessary and breaks internal communication.
+
+This happens because north–south traffic (client → gateway) and east–west traffic (service → service) use the same routes.
+
+Goal
+
+Separate the authentication & routing behavior for:
+
+External clients
+
+Internal service-to-service communication
+
+Without passing the user's long-lived JWT everywhere.
+
+Three Architecture Options
+1. API Gateway (External Traffic) + Service Mesh (Internal Traffic)
+
+Recommended for Kubernetes / cloud-native setups
+
+Flow
+
+Client → Gateway
+
+Gateway validates user JWT
+
+Gateway mints a short-lived internal token or adds minimal user context
+
+Traffic inside cluster is handled by service mesh
+
+Service Mesh Responsibilities
+
+mTLS between services
+
+Valid service identities (SPIFFE)
+
+Access policies (e.g., “Service A can call Service B only”)
+
+Benefits
+
+Cleanest separation of external vs internal rules
+
+Microservices do NOT receive user JWTs
+
+Internal routes bypass JWT validation completely
+
+Highly secure: identity is proven by mTLS certificates
+
+2. Dual Gateway Architecture (External Gateway + Internal Gateway)
+
+Best if not using a mesh but still want clear separation.
+
+Flow
+
+External Gateway:
+
+Handles user JWT validation
+
+Converts user JWT → short-lived internal token
+
+Sends request to internal gateway
+
+Internal Gateway:
+
+Exposes internal-only routes
+
+Authenticates service calls via:
+
+mTLS OR
+
+client credentials token OR
+
+gateway-issued signed header
+
+Benefits
+
+External & internal route logic is fully separated
+
+Internal services do not need JWT filters
+
+Flexible for monolith → microservice migrations
+
+3. Single API Gateway with Split Route Rules (Simplest Setup)
+
+Use one gateway, but define two types of routes:
+
+A. External Routes
+
+Match by host: api.myapp.com
+
+Require JWT validation filter
+
+Used only by browsers / mobile apps
+
+B. Internal Routes
+
+Match by:
+
+internal DNS (e.g., *.svc.cluster.local) OR
+
+internal path prefix (e.g., /internal/*)
+
+mTLS client certificates
+
+network allowlist
+
+Internal routes:
+
+Do not use JWT filter
+
+Validate identity by trusted transport (mTLS) or gateway-signed headers
+
+Benefits
+
+Easy to implement in Spring Cloud Gateway
+
+No JWT required for internal communication
+
+Internal calls have their own secure path
+
+Downside
+
+Must prevent spoofing of internal headers
+
+Must enforce TLS for internal traffic
+
+Recommended Flow for Your Microservices Project
+
+Based on your stack (Spring Boot + Spring Cloud Gateway), the cleanest setup is:
+
+✔ Gateway validates user JWT only for external requests
+Client → Gateway → User JWT validation → Service A
+
+✔ Gateway injects minimal user context into headers
+
+Example headers:
+
+X-User-Id: 123
+X-Roles: ADMIN
+X-Verified: true
+X-Internal-Token: <gateway-signed-token>
+
+✔ Services trust the gateway, not user JWT
+
+Internal flow:
+
+Service A → Service B (No user JWT)
+
+
+Service B checks:
+
+Gateway signature
+
+Internal token
+
+User role extracted by gateway
+
+✔ Services perform ONLY authorization, NOT authentication
+
+Meaning:
+
+Who is calling? → Gateway tells
+
+Is that role allowed? → Service checks
+
+No need to re-validate JWT.
+
+Final Architecture Diagram (Text Version)
+            [External Client]
+                   |
+                   v
+          +----------------------+
+          |     API Gateway     |
+          |----------------------|
+          | Validate JWT        |
+          | Extract roles       |
+          | Mint internal token |
+          +----------------------+
+                   |
+      +------------+------------+
+      |                         |
+      v                         v
+ [Service A]  <----mTLS---->  [Service B]
+          (no JWT needed)
+          (internal token only)
