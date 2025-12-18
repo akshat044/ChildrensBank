@@ -4,6 +4,8 @@ package in.akshat.account_service.controller;
 import in.akshat.account_service.dto.*;
 import in.akshat.account_service.service.AccountService;
 import jakarta.validation.Valid;
+
+import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -11,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-
+@RefreshScope
 @RestController	
 @RequestMapping("/api/accounts")
 public class AccountController {

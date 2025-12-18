@@ -1,6 +1,8 @@
 package in.akshat.employee_service.controller;
 
 import jakarta.validation.Valid;
+
+import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,6 +17,7 @@ import in.akshat.employee_service.service.EmployeeService;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@RefreshScope
 @RestController
 @RequestMapping("/api/employees") 
 public class EmployeeController {

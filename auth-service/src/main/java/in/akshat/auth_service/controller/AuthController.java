@@ -1,5 +1,6 @@
 package in.akshat.auth_service.controller;
  
+import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -13,6 +14,7 @@ import jakarta.validation.Valid;
 
 import java.util.Map;
 
+@RefreshScope
 @RestController
 @RequestMapping("/auth")
 public class AuthController {

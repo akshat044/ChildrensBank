@@ -1,5 +1,0 @@
-package in.akshat.api_gateway.security;
-
-public class GatewaySecurityConfig {
-
-}

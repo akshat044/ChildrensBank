@@ -1,6 +1,7 @@
 package in.akshat.debit_card_service.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -10,6 +11,7 @@ import in.akshat.debit_card_service.dto.CardInfoResponse;
 import in.akshat.debit_card_service.dto.CardIssueRequest;
 import in.akshat.debit_card_service.service.DebitCardService;
 
+@RefreshScope
 @RestController
 @RequestMapping("/api/debit-card")
 public class DebitCardController {

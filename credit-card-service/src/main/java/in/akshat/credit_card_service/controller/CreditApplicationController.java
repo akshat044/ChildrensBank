@@ -1,5 +1,6 @@
 package in.akshat.credit_card_service.controller;
 
+import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -10,6 +11,7 @@ import in.akshat.credit_card_service.dto.CreditApplicationRequest;
 import in.akshat.credit_card_service.dto.CreditApplicationResponse;
 import in.akshat.credit_card_service.service.CreditApplicationService;
 
+@RefreshScope
 @RestController
 @RequestMapping("/api/credit-card")
 public class CreditApplicationController {

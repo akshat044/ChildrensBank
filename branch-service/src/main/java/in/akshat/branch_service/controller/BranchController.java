@@ -3,6 +3,8 @@ package in.akshat.branch_service.controller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -22,14 +24,23 @@ import in.akshat.branch_service.mapper.BranchMapper;
 import in.akshat.branch_service.service.BranchService;
 import jakarta.validation.Valid;
 
+@RefreshScope // for refreshing the bean
 @RestController
 @RequestMapping("/api/branches") 
 public class BranchController {
 	  
 	@Autowired
 	    private BranchService branchService;
-
-	  
+	
+	@Value("${welcome.message}")
+	private String message;
+	
+	// just for testing purposes of that whether the properties file loaded or not
+	@GetMapping("/print")
+	public String print() {
+		return "from brannch" + message;
+	}
+	
 	    @PostMapping
 	    public ResponseEntity<BranchResponse> createBranch(@RequestBody @Valid BranchCreateDto branchCreateDto) {
 	    Branch b = 	branchService.createBranch(BranchMapper.toEntity(branchCreateDto));

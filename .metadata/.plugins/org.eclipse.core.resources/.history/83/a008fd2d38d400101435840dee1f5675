@@ -1,5 +1,0 @@
-package in.akshat.auth_service.exception;
-
-public class GlobalExceptionHandler {
-
-}
